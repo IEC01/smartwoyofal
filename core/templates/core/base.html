@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Smart Woyofal — SENELEC{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --senelec-blue:    #003F8A;
+      --senelec-blue2:   #0055B3;
+      --senelec-yellow:  #F5A800;
+      --senelec-yellow2: #FFB800;
+      --senelec-green:   #00874A;
+      --senelec-red:     #D0021B;
+      --bg:        #F4F6FA;
+      --surface:   #FFFFFF;
+      --surface2:  #EEF2F9;
+      --border:    #D5DDE8;
+      --text:      #0D1B2E;
+      --muted:     #5C6E8A;
+      --danger:    #D0021B;
+      --success:   #00874A;
+      --radius:    12px;
+      --shadow:    0 2px 12px rgba(0,63,138,0.08);
+      --font:      'Inter', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; line-height: 1.6; }
+    a { color: var(--senelec-blue); text-decoration: none; }
+    a:hover { color: var(--senelec-blue2); }
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+    nav {
+      background: var(--senelec-blue);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1000px; margin: 0 auto; padding: 0 24px; height: 64px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-badge {
+      background: var(--senelec-yellow); color: var(--senelec-blue);
+      font-weight: 800; font-size: 0.78rem; padding: 4px 10px;
+      border-radius: 6px; letter-spacing: 0.04em;
+    }
+    .logo-text { color: #fff; font-size: 1.05rem; font-weight: 700; }
+    .logo-text span { color: var(--senelec-yellow); }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.75); font-size: 0.88rem; font-weight: 500;
+      padding: 8px 14px; border-radius: 8px; transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.12); color: #fff; }
+    .senelec-stripe { height: 4px; background: linear-gradient(90deg, var(--senelec-blue) 0%, var(--senelec-yellow) 50%, var(--senelec-green) 100%); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 22px; border-radius: 8px;
+      font-family: var(--font); font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; border: none; transition: all 0.18s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary { background: var(--senelec-blue); color: #fff; }
+    .btn-primary:hover { background: var(--senelec-blue2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,63,138,0.25); }
+    .btn-yellow { background: var(--senelec-yellow); color: var(--senelec-blue); font-weight: 700; }
+    .btn-yellow:hover { background: var(--senelec-yellow2); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--senelec-blue); border: 1.5px solid var(--senelec-blue); }
+    .btn-outline:hover { background: var(--senelec-blue); color: #fff; }
+    .btn-ghost { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--senelec-blue); color: var(--senelec-blue); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+    .btn-lg { padding: 14px 28px; font-size: 1rem; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .form-input {
+      width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: 11px 14px; color: var(--text);
+      font-family: var(--font); font-size: 0.95rem; transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    }
+    .form-input:focus { border-color: var(--senelec-blue); box-shadow: 0 0 0 3px rgba(0,63,138,0.1); }
+    .form-input::placeholder { color: #b0bac8; }
+
+    #toast { position: fixed; bottom: 28px; right: 28px; z-index: 9999; max-width: 360px; }
+    .toast-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px; margin-top: 10px;
+      display: flex; align-items: flex-start; gap: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12); animation: slideIn 0.28s ease; font-size: 0.88rem;
+    }
+    .toast-item.success { border-left: 3px solid var(--success); }
+    .toast-item.error   { border-left: 3px solid var(--danger); }
+    @keyframes slideIn { from { transform: translateX(80px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    .spinner {
+      width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%; animation: spin 0.65s linear infinite; display: inline-block; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer {
+      background: var(--senelec-blue); color: rgba(255,255,255,0.6);
+      text-align: center; padding: 28px 24px; font-size: 0.82rem; margin-top: 80px;
+    }
+    footer strong { color: var(--senelec-yellow); }
+    footer .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; flex-wrap: wrap; }
+    footer .footer-links a { color: rgba(255,255,255,0.6); font-size: 0.82rem; }
+    footer .footer-links a:hover { color: var(--senelec-yellow); }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <div class="logo">
+        <div class="logo-badge">SENELEC</div>
+        <div class="logo-text">Smart<span>Woyofal</span></div>
+      </div>
+      <div class="nav-links">
+        <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Accueil</a>
+        <a href="/recharge/" {% if request.path == '/recharge/' %}class="active"{% endif %}>⚡ Recharger</a>
+      </div>
+    </div>
+  </nav>
+  <div class="senelec-stripe"></div>
+
+  {% block content %}{% endblock %}
+
+  <footer>
+    <div class="footer-links">
+      <a href="#">Aide</a>
+      <a href="#">Contact</a>
+      <a href="#">Conditions d'utilisation</a>
+      <a href="#">Politique de confidentialité</a>
+    </div>
+    <strong>SENELEC</strong> — Société Nationale d'Électricité du Sénégal &nbsp;·&nbsp; Smart Woyofal © 2026
+  </footer>
+
+  <div id="toast"></div>
+
+  <script>
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      const el = document.createElement('div');
+      el.className = `toast-item ${type}`;
+      el.innerHTML = `<span style="flex-shrink:0">${type==='success'?'✅':'❌'}</span><span>${msg}</span>`;
+      t.appendChild(el);
+      setTimeout(() => { el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, 4200);
+    }
+    function getCookie(name) {
+      for (const c of document.cookie.split(';')) {
+        const p = c.trim();
+        if (p.startsWith(name+'=')) return decodeURIComponent(p.slice(name.length+1));
+      }
+      return null;
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

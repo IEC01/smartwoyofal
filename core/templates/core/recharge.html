@@ -1,0 +1,561 @@
+{% extends 'core/base.html' %}
+{% block title %}Recharger mon compteur — Smart Woyofal{% endblock %}
+
+{% block extra_css %}
+.page { padding: 40px 0 80px; }
+.page-header {
+  background: var(--senelec-blue);
+  color: #fff; padding: 32px 0;
+  margin-bottom: 40px;
+}
+.page-header h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; }
+.page-header p { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+
+/* STEPPER */
+.stepper {
+  display: flex; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; margin-bottom: 36px; box-shadow: var(--shadow);
+}
+.step-item {
+  flex: 1; padding: 14px 16px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.82rem; color: var(--muted);
+  border-right: 1px solid var(--border); cursor: default;
+  transition: all 0.3s;
+}
+.step-item:last-child { border-right: none; }
+.step-item.active { color: var(--senelec-blue); background: var(--surface2); font-weight: 600; }
+.step-item.done { color: var(--senelec-green); }
+.step-dot {
+  width: 26px; height: 26px; min-width: 26px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; transition: all 0.3s;
+}
+.step-item.active .step-dot { border-color: var(--senelec-blue); background: var(--senelec-blue); color: #fff; }
+.step-item.done .step-dot { border-color: var(--senelec-green); background: var(--senelec-green); color: #fff; }
+
+/* TABS */
+.tab-bar {
+  display: flex; gap: 0; margin-bottom: 32px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+}
+.tab-btn {
+  flex: 1; padding: 14px 20px; background: transparent;
+  border: none; border-right: 1px solid var(--border);
+  color: var(--muted); font-family: var(--font); font-weight: 600; font-size: 0.9rem;
+  cursor: pointer; transition: all 0.2s;
+}
+.tab-btn:last-child { border-right: none; }
+.tab-btn.active { background: var(--senelec-blue); color: #fff; }
+.tab-btn:not(.active):hover { background: var(--surface2); color: var(--senelec-blue); }
+
+/* PANEL */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* TWO-COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+@media (max-width: 680px) {
+  .two-col { grid-template-columns: 1fr; }
+  .stepper { flex-direction: column; }
+  .step-item { border-right: none; border-bottom: 1px solid var(--border); }
+  .step-item:last-child { border-bottom: none; }
+}
+
+/* SECTION TITLE */
+.sec-label {
+  font-size: 0.75rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px;
+}
+
+/* OFFERS */
+.offers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.offer-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 10px; padding: 18px 12px; text-align: center;
+  cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden;
+}
+.offer-card:hover { border-color: var(--senelec-blue); box-shadow: 0 4px 12px rgba(0,63,138,0.1); }
+.offer-card.selected { border-color: var(--senelec-blue); background: rgba(0,63,138,0.04); }
+.offer-label { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.offer-kwh { font-size: 1.4rem; font-weight: 800; color: var(--senelec-blue); line-height: 1; margin-bottom: 2px; }
+.offer-unit { font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; }
+.offer-price { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.offer-check {
+  position: absolute; top: 8px; right: 8px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--senelec-blue); color: #fff; font-size: 0.6rem;
+  display: none; align-items: center; justify-content: center; font-weight: 700;
+}
+.offer-card.selected .offer-check { display: flex; }
+
+/* PROVIDERS */
+.providers-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.provider-btn {
+  flex: 1; min-width: 120px; padding: 14px 10px;
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font); font-weight: 600; font-size: 0.88rem;
+  color: var(--text); transition: all 0.18s;
+}
+.provider-btn:hover { border-color: var(--senelec-blue); }
+.provider-btn.sel-wave { border-color: #1a73e8; background: rgba(26,115,232,0.05); color: #1a73e8; }
+.provider-btn.sel-orange { border-color: #ff6600; background: rgba(255,102,0,0.05); color: #cc5200; }
+.provider-btn.sel-free { border-color: #cd1719; background: rgba(205,23,25,0.05); color: #cd1719; }
+
+/* SUMMARY */
+.summary-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 20px; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+.summary-row:last-child { border-bottom: none; }
+.summary-row .lbl { color: var(--muted); }
+.summary-row .val { font-weight: 600; font-family: var(--font-mono); font-size: 0.85rem; }
+.summary-row.total .val { color: var(--senelec-blue); font-size: 1rem; font-weight: 700; }
+
+/* TOKEN RESULT */
+.token-result {
+  background: #f0faf5; border: 1.5px solid #b3e0c8;
+  border-radius: var(--radius); padding: 28px; text-align: center; margin-bottom: 24px;
+}
+.token-result h3 { color: var(--senelec-green); font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; }
+.token-result p { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
+.token-display {
+  background: var(--surface); border: 2px dashed #b3e0c8;
+  border-radius: 10px; padding: 16px;
+  font-family: var(--font-mono); font-size: 0.78rem; color: var(--senelec-green);
+  word-break: break-all; letter-spacing: 0.04em;
+  cursor: pointer; transition: background 0.18s; margin-bottom: 8px;
+}
+.token-display:hover { background: #e8f7ef; }
+.copy-hint { font-size: 0.72rem; color: var(--muted); margin-bottom: 16px; }
+.token-expiry {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(245,168,0,0.1); color: #996800;
+  border: 1px solid rgba(245,168,0,0.3); border-radius: 8px;
+  padding: 5px 12px; font-size: 0.78rem; font-weight: 600;
+}
+
+/* VALIDATION SUCCESS */
+.val-success {
+  background: #f0faf5; border: 2px solid var(--senelec-green);
+  border-radius: var(--radius); padding: 48px 32px; text-align: center;
+}
+.val-success .big-icon { font-size: 3.5rem; display: block; margin-bottom: 16px; animation: pop .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+.val-success h2 { font-size: 1.4rem; font-weight: 800; color: var(--senelec-green); margin-bottom: 8px; }
+.val-success .new-balance { font-size: 2.8rem; font-weight: 800; color: var(--senelec-blue); font-family: var(--font-mono); letter-spacing: -1px; margin: 16px 0 4px; }
+.val-success .bal-label { color: var(--muted); font-size: 0.88rem; }
+
+/* ALERT BOX */
+.alert { border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; margin-bottom: 16px; }
+.alert-info { background: rgba(0,63,138,0.06); border: 1px solid rgba(0,63,138,0.2); color: var(--senelec-blue); }
+.alert-warn { background: rgba(245,168,0,0.1); border: 1px solid rgba(245,168,0,0.35); color: #7a5500; }
+{% endblock %}
+
+{% block content %}
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <h1>⚡ Recharger mon compteur</h1>
+    <p>Achetez du crédit kWh et validez votre token pour créditer votre compteur SENELEC.</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STEPPER -->
+  <div class="stepper">
+    <div class="step-item active" id="step-ind-1"><div class="step-dot">1</div><span>Offre</span></div>
+    <div class="step-item" id="step-ind-2"><div class="step-dot">2</div><span>Paiement</span></div>
+    <div class="step-item" id="step-ind-3"><div class="step-dot">3</div><span>Token</span></div>
+    <div class="step-item" id="step-ind-4"><div class="step-dot">4</div><span>Validation</span></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('buy')">💳 Acheter du crédit</button>
+    <button class="tab-btn" onclick="switchTab('validate')">🔑 Valider un token</button>
+  </div>
+
+  <!-- ═══════════════════════════ TAB ACHETER ═══════════════════════════ -->
+  <div id="tab-buy">
+
+    <!-- PANEL 1 : OFFRE + COMPTEUR -->
+    <div class="panel active" id="panel-1">
+      <div class="two-col">
+        <div>
+          <div class="sec-label">Offres disponibles</div>
+          <div class="offers-grid" id="offers-grid"></div>
+          <div class="form-group">
+            <label class="form-label">Montant personnalisé (FCFA)</label>
+            <input type="number" id="custom-amount" class="form-input" placeholder="Min. 500 FCFA, multiple de 500" min="500" step="500" oninput="selectCustom(this.value)">
+          </div>
+        </div>
+        <div>
+          <div class="sec-label">Votre compteur SENELEC</div>
+          <div class="form-group">
+            <label class="form-label">Numéro de compteur</label>
+            <input type="text" id="meter-id-input" class="form-input" placeholder="ex: MTR-001" />
+          </div>
+          <button class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:16px" onclick="checkBalance()">
+            Vérifier le solde
+          </button>
+          <div id="meter-info" style="display:none">
+            <div class="summary-box">
+              <div class="summary-row"><span class="lbl">Compteur</span><span class="val" id="mi-id">—</span></div>
+              <div class="summary-row"><span class="lbl">Solde actuel</span><span class="val" id="mi-bal">—</span></div>
+              <div class="summary-row"><span class="lbl">Lieu</span><span class="val" id="mi-loc">—</span></div>
+            </div>
+          </div>
+          <div class="alert alert-info">
+            ℹ️ Votre N° de compteur figure sur votre facture SENELEC ou sur le boîtier du compteur.
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-primary btn-lg" onclick="goToStep2()">Continuer → Paiement</button>
+      </div>
+    </div>
+
+    <!-- PANEL 2 : PAIEMENT MOBILE -->
+    <div class="panel" id="panel-2">
+      <div class="two-col">
+        <div>
+          <div class="sec-label">Choisissez votre opérateur</div>
+          <div class="providers-row">
+            <button class="provider-btn" id="btn-wave" onclick="selectProvider('wave',this)">
+              <div class="p-dot" style="background:#1a73e8;width:10px;height:10px;border-radius:50%"></div> Wave
+            </button>
+            <button class="provider-btn" id="btn-orange_money" onclick="selectProvider('orange_money',this)">
+              <div class="p-dot" style="background:#ff6600;width:10px;height:10px;border-radius:50%"></div> Orange Money
+            </button>
+            <button class="provider-btn" id="btn-free_money" onclick="selectProvider('free_money',this)">
+              <div class="p-dot" style="background:#cd1719;width:10px;height:10px;border-radius:50%"></div> Free Money
+            </button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Numéro de téléphone</label>
+            <input type="tel" id="phone-input" class="form-input" placeholder="ex: 77 123 45 67" />
+          </div>
+          <div class="alert alert-warn">
+            ⚠️ Vérifiez que votre numéro est exact et que votre solde est suffisant.
+          </div>
+        </div>
+        <div>
+          <div class="sec-label">Récapitulatif de commande</div>
+          <div class="summary-box">
+            <div class="summary-row"><span class="lbl">Compteur</span><span class="val" id="sum-meter">—</span></div>
+            <div class="summary-row"><span class="lbl">Crédit</span><span class="val" id="sum-kwh">—</span></div>
+            <div class="summary-row"><span class="lbl">Opérateur</span><span class="val" id="sum-provider">—</span></div>
+            <div class="summary-row total"><span class="lbl">Total à payer</span><span class="val" id="sum-amount">—</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-ghost" onclick="goToPanel(1)">← Retour</button>
+        <button class="btn btn-primary btn-lg" id="pay-btn" onclick="submitPayment()">Confirmer le paiement</button>
+      </div>
+    </div>
+
+    <!-- PANEL 3 : TOKEN REÇU -->
+    <div class="panel" id="panel-3">
+      <div style="max-width:560px;margin:0 auto">
+        <div class="token-result">
+          <h3>✅ Paiement confirmé !</h3>
+          <p>Voici votre token de recharge. Copiez-le et utilisez-le pour créditer votre compteur.</p>
+          <div class="token-display" id="token-display" onclick="copyToken()" title="Cliquer pour copier"></div>
+          <p class="copy-hint">🖱 Cliquez sur le token pour le copier</p>
+          <div class="token-expiry" id="token-expiry">⏱ Expire le …</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-row"><span class="lbl">Référence</span><span class="val" id="res-ref">—</span></div>
+          <div class="summary-row"><span class="lbl">ID transaction</span><span class="val" id="res-txn">—</span></div>
+          <div class="summary-row"><span class="lbl">Compteur</span><span class="val" id="res-meter">—</span></div>
+          <div class="summary-row total"><span class="lbl">Crédit acheté</span><span class="val" id="res-kwh">—</span></div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px">
+          <button class="btn btn-primary btn-lg" onclick="goToValidate()">→ Valider ce token</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-buy -->
+
+  <!-- ═══════════════════════════ TAB VALIDER ═══════════════════════════ -->
+  <div id="tab-validate" style="display:none">
+
+    <div id="val-form" style="max-width:500px;margin:0 auto">
+      <div class="card">
+        <div class="sec-label" style="margin-bottom:4px">Validation du token</div>
+        <p style="color:var(--muted);font-size:0.875rem;margin-bottom:24px">
+          Entrez le numéro de votre compteur et le token reçu après paiement pour créditer votre compteur SENELEC.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Numéro de compteur</label>
+          <input type="text" id="val-meter" class="form-input" placeholder="ex: MTR-001" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Token de recharge</label>
+          <input type="text" id="val-token" class="form-input"
+            placeholder="Collez votre token ici…"
+            style="font-family:var(--font-mono);font-size:0.82rem" />
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" id="val-btn" onclick="submitValidation()">
+          ✅ Valider et créditer le compteur
+        </button>
+      </div>
+    </div>
+
+    <div id="val-success" style="display:none;max-width:500px;margin:0 auto">
+      <div class="val-success">
+        <span class="big-icon">⚡</span>
+        <h2>Compteur crédité !</h2>
+        <p style="color:var(--muted);font-size:0.88rem">Nouveau solde de votre compteur</p>
+        <div class="new-balance" id="val-balance">— kWh</div>
+        <p class="bal-label" id="val-credited">+— kWh ajoutés</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="resetVal()">Valider un autre token</button>
+        <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+      </div>
+    </div>
+
+  </div><!-- /tab-validate -->
+
+</div><!-- /container -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const TARIF = 120;
+const state = { offer: null, meterId: null, provider: null, token: null };
+
+// ── OFFERS ──
+async function loadOffers() {
+  let offers;
+  try {
+    const r = await fetch('/api/offers/');
+    const d = await r.json();
+    offers = d.offers;
+  } catch {
+    offers = [
+      {fcfa:500,  kwh:4.17,  label:'Starter'},
+      {fcfa:1000, kwh:8.33,  label:'Basic'},
+      {fcfa:2500, kwh:20.83, label:'Standard'},
+      {fcfa:5000, kwh:41.67, label:'Premium'},
+      {fcfa:10000,kwh:83.33, label:'Pro'},
+    ];
+  }
+  const grid = document.getElementById('offers-grid');
+  grid.innerHTML = offers.map((o, i) => `
+    <div class="offer-card" onclick="selectOffer(${o.fcfa},${o.kwh},${i})">
+      <div class="offer-check">✓</div>
+      <div class="offer-label">${o.label}</div>
+      <div class="offer-kwh">${o.kwh}</div>
+      <div class="offer-unit">kWh</div>
+      <div class="offer-price">${o.fcfa.toLocaleString('fr')} F</div>
+    </div>`).join('');
+}
+
+function selectOffer(fcfa, kwh, idx) {
+  state.offer = {fcfa, kwh};
+  document.getElementById('custom-amount').value = '';
+  document.querySelectorAll('.offer-card').forEach((c,i) => c.classList.toggle('selected', i===idx));
+}
+function selectCustom(val) {
+  const fcfa = parseInt(val);
+  if (!fcfa || fcfa < 500) return;
+  state.offer = {fcfa, kwh: Math.round(fcfa/TARIF*100)/100};
+  document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+}
+
+// ── BALANCE CHECK ──
+async function checkBalance() {
+  const id = document.getElementById('meter-id-input').value.trim();
+  if (!id) { showToast('Entrez un numéro de compteur.', 'error'); return; }
+  try {
+    const r = await fetch(`/api/meter/${encodeURIComponent(id)}/balance/`);
+    if (!r.ok) { showToast('Compteur introuvable ou inactif.', 'error'); return; }
+    const d = await r.json();
+    document.getElementById('mi-id').textContent  = d.meter_id;
+    document.getElementById('mi-bal').textContent = d.credit_kwh + ' kWh';
+    document.getElementById('mi-loc').textContent = d.location;
+    document.getElementById('meter-info').style.display = 'block';
+    showToast('Compteur trouvé ✓', 'success');
+  } catch { showToast('Erreur réseau.', 'error'); }
+}
+
+// ── PROVIDER ──
+function selectProvider(p, btn) {
+  state.provider = p;
+  ['wave','orange_money','free_money'].forEach(k => {
+    const b = document.getElementById('btn-'+k);
+    b.className = 'provider-btn';
+    if (k===p) {
+      if (p==='wave')         b.classList.add('sel-wave');
+      else if (p==='orange_money') b.classList.add('sel-orange');
+      else                    b.classList.add('sel-free');
+    }
+  });
+  const labels = {wave:'Wave', orange_money:'Orange Money', free_money:'Free Money'};
+  document.getElementById('sum-provider').textContent = labels[p];
+}
+
+// ── STEP 2 ──
+function goToStep2() {
+  const meterId = document.getElementById('meter-id-input').value.trim();
+  if (!meterId)    { showToast('Entrez votre numéro de compteur.', 'error'); return; }
+  if (!state.offer){ showToast('Choisissez une offre.', 'error'); return; }
+  state.meterId = meterId;
+  document.getElementById('sum-meter').textContent  = meterId;
+  document.getElementById('sum-kwh').textContent    = state.offer.kwh + ' kWh';
+  document.getElementById('sum-amount').textContent = state.offer.fcfa.toLocaleString('fr') + ' FCFA';
+  goToPanel(2);
+}
+
+// ── PANEL NAV ──
+function goToPanel(n) {
+  for (let i=1;i<=3;i++) {
+    document.getElementById(`panel-${i}`).classList.toggle('active', i===n);
+    const ind = document.getElementById(`step-ind-${i}`);
+    ind.className = 'step-item' + (i===n?' active':i<n?' done':'');
+    ind.querySelector('.step-dot').textContent = i<n ? '✓' : i;
+  }
+}
+
+// ── PAYMENT ──
+async function submitPayment() {
+  if (!state.provider) { showToast('Choisissez un opérateur.', 'error'); return; }
+  const phone = document.getElementById('phone-input').value.trim();
+  if (!phone) { showToast('Entrez votre numéro de téléphone.', 'error'); return; }
+
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Traitement en cours…';
+
+  try {
+    const csrf = getCookie('csrftoken') || '';
+    const r = await fetch('/api/payment/create/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrf,
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        meter_id:    state.meterId,
+        amount_fcfa: state.offer.fcfa,
+        provider:    state.provider,
+        phone_number: phone,
+      }),
+    });
+
+    let d;
+    try { d = await r.json(); } catch { throw new Error('Réponse invalide du serveur.'); }
+
+    if (!r.ok || !d.success) {
+      showToast(d.message || d.error || JSON.stringify(d), 'error');
+      return;
+    }
+
+    // Succès
+    state.token = d.token;
+    document.getElementById('token-display').textContent = d.token;
+    const exp = d.token_expires_at ? new Date(d.token_expires_at).toLocaleString('fr-FR') : '24h';
+    document.getElementById('token-expiry').textContent = `⏱ Expire le ${exp}`;
+    document.getElementById('res-ref').textContent   = d.order_ref;
+    document.getElementById('res-txn').textContent   = d.transaction_id;
+    document.getElementById('res-meter').textContent = d.meter_id;
+    document.getElementById('res-kwh').textContent   = d.amount_kwh + ' kWh';
+    goToPanel(3);
+    showToast('Paiement confirmé ! Votre token est prêt.', 'success');
+
+  } catch(e) {
+    showToast('Erreur : ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Confirmer le paiement';
+  }
+}
+
+// ── COPY TOKEN ──
+function copyToken() {
+  const t = document.getElementById('token-display').textContent.trim();
+  navigator.clipboard.writeText(t).then(() => showToast('Token copié !', 'success'));
+}
+
+// ── GO TO VALIDATE ──
+function goToValidate() {
+  switchTab('validate');
+  if (state.token)   document.getElementById('val-token').value  = state.token;
+  if (state.meterId) document.getElementById('val-meter').value  = state.meterId;
+  // mark step 4 active
+  document.getElementById('step-ind-4').className = 'step-item active';
+}
+
+// ── VALIDATION ──
+async function submitValidation() {
+  const meterId = document.getElementById('val-meter').value.trim();
+  const token   = document.getElementById('val-token').value.trim();
+  if (!meterId || !token) { showToast('Remplissez tous les champs.', 'error'); return; }
+
+  const btn = document.getElementById('val-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Validation…';
+
+  try {
+    const csrf = getCookie('csrftoken') || '';
+    const r = await fetch('/api/payment/validate/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      credentials: 'same-origin',
+      body: JSON.stringify({ meter_id: meterId, token }),
+    });
+
+    let d;
+    try { d = await r.json(); } catch { throw new Error('Réponse invalide du serveur.'); }
+
+    if (!r.ok || !d.success) {
+      showToast(d.error || d.message || JSON.stringify(d), 'error');
+      return;
+    }
+
+    document.getElementById('val-balance').textContent  = d.new_balance_kwh + ' kWh';
+    document.getElementById('val-credited').textContent = `+${d.credited_kwh} kWh ajoutés`;
+    document.getElementById('val-form').style.display    = 'none';
+    document.getElementById('val-success').style.display = 'block';
+    document.getElementById('step-ind-4').className = 'step-item done';
+    document.getElementById('step-ind-4').querySelector('.step-dot').textContent = '✓';
+    showToast('Compteur crédité avec succès ! ⚡', 'success');
+
+  } catch(e) {
+    showToast('Erreur : ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✅ Valider et créditer le compteur';
+  }
+}
+
+function resetVal() {
+  document.getElementById('val-meter').value  = '';
+  document.getElementById('val-token').value  = '';
+  document.getElementById('val-form').style.display    = 'block';
+  document.getElementById('val-success').style.display = 'none';
+}
+
+// ── TABS ──
+function switchTab(tab) {
+  document.getElementById('tab-buy').style.display      = tab==='buy'      ? 'block' : 'none';
+  document.getElementById('tab-validate').style.display = tab==='validate' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b,i) =>
+    b.classList.toggle('active', (i===0&&tab==='buy')||(i===1&&tab==='validate'))
+  );
+}
+
+loadOffers();
+</script>
+{% endblock %}

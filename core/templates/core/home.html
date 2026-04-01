@@ -1,0 +1,225 @@
+{% extends 'core/base.html' %}
+{% block title %}Smart Woyofal — Recharge électrique en ligne | SENELEC{% endblock %}
+
+{% block extra_css %}
+.hero {
+  background: linear-gradient(135deg, var(--senelec-blue) 0%, #00296b 100%);
+  color: #fff;
+  padding: 72px 0 64px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -120px; right: -120px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(245,168,0,0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--senelec-yellow) 0%, var(--senelec-green) 100%);
+}
+.hero-inner { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(245,168,0,0.18); color: var(--senelec-yellow);
+  border: 1px solid rgba(245,168,0,0.35); border-radius: 100px;
+  padding: 5px 14px; font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.04em; margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
+  line-height: 1.15; letter-spacing: -1px; margin-bottom: 16px;
+}
+.hero h1 span { color: var(--senelec-yellow); }
+.hero p { color: rgba(255,255,255,0.75); font-size: 1.05rem; max-width: 520px; margin-bottom: 36px; line-height: 1.7; }
+.hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.stats-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+}
+.stats-inner {
+  max-width: 1000px; margin: 0 auto; padding: 0 24px;
+  display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;
+}
+.stat { text-align: center; }
+.stat-value { font-size: 1.6rem; font-weight: 800; color: var(--senelec-blue); line-height: 1; }
+.stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.section { padding: 64px 0; }
+.section-title {
+  font-size: 1.5rem; font-weight: 800; color: var(--text);
+  margin-bottom: 8px; letter-spacing: -0.3px;
+}
+.section-sub { color: var(--muted); margin-bottom: 40px; font-size: 0.95rem; }
+
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.feature-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px 24px;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+.feature-card:hover { box-shadow: 0 8px 24px rgba(0,63,138,0.1); border-color: rgba(0,63,138,0.25); transform: translateY(-2px); }
+.feature-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--surface2); display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 16px;
+}
+.feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+.feature-card p { color: var(--muted); font-size: 0.875rem; line-height: 1.6; }
+
+.providers-section { background: var(--senelec-blue); padding: 48px 0; }
+.providers-inner { max-width: 1000px; margin: 0 auto; padding: 0 24px; text-align: center; }
+.providers-section h2 { color: #fff; font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+.providers-section p { color: rgba(255,255,255,0.65); font-size: 0.9rem; margin-bottom: 32px; }
+.providers-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.provider-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px; padding: 10px 20px;
+  color: #fff; font-weight: 600; font-size: 0.9rem;
+  transition: background 0.2s;
+}
+.provider-pill:hover { background: rgba(255,255,255,0.18); }
+.p-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.steps-section { padding: 64px 0; background: var(--surface2); }
+.steps-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px; margin-top: 40px;
+}
+.step-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px 20px; text-align: center;
+  position: relative; box-shadow: var(--shadow);
+}
+.step-num {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--senelec-blue); color: #fff;
+  font-weight: 800; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px; font-family: var(--font-mono);
+}
+.step-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+.step-card p { color: var(--muted); font-size: 0.83rem; line-height: 1.6; }
+
+.cta-banner {
+  background: linear-gradient(135deg, var(--senelec-yellow) 0%, #e8950a 100%);
+  border-radius: var(--radius); padding: 40px 36px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  flex-wrap: wrap; margin-top: 40px;
+}
+.cta-banner h3 { font-size: 1.3rem; font-weight: 800; color: var(--senelec-blue); }
+.cta-banner p { color: rgba(0,63,138,0.75); margin-top: 4px; font-size: 0.9rem; }
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">⚡ Service numérique SENELEC</div>
+    <h1>Rechargez votre compteur<br>depuis votre <span>téléphone</span></h1>
+    <p>Achetez du crédit kWh directement avec Wave, Orange Money ou Free Money. Sans déplacement, sans file d'attente.</p>
+    <div class="hero-cta">
+      <a href="/recharge/" class="btn btn-yellow btn-lg">⚡ Recharger maintenant</a>
+      <a href="/recharge/" class="btn btn-lg" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25)">Valider un token</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-value">3</div><div class="stat-label">Opérateurs acceptés</div></div>
+    <div class="stat"><div class="stat-value">24h</div><div class="stat-label">Validité du token</div></div>
+    <div class="stat"><div class="stat-value">120</div><div class="stat-label">FCFA / kWh</div></div>
+    <div class="stat"><div class="stat-value">500</div><div class="stat-label">FCFA minimum</div></div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- FEATURES -->
+  <section class="section">
+    <h2 class="section-title">Pourquoi Smart Woyofal ?</h2>
+    <p class="section-sub">Un service simple, rapide et sécurisé pour recharger votre compteur à prépaiement.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Crédit instantané</h3>
+        <p>Votre compteur est crédité dès validation du token. Pas d'attente.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>Token sécurisé</h3>
+        <p>Chaque recharge génère un code unique SHA-256, valable 24h.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Mobile Money</h3>
+        <p>Wave, Orange Money, Free Money — payez où vous êtes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Historique complet</h3>
+        <p>Suivez toutes vos recharges et votre consommation.</p>
+      </div>
+    </div>
+
+    <div class="cta-banner">
+      <div>
+        <h3>Prêt à recharger ?</h3>
+        <p>Choisissez une offre dès 500 FCFA et rechargez en 2 minutes.</p>
+      </div>
+      <a href="/recharge/" class="btn btn-primary btn-lg">Commencer →</a>
+    </div>
+  </section>
+</div>
+
+<!-- PROVIDERS -->
+<section class="providers-section">
+  <div class="providers-inner">
+    <h2>Opérateurs acceptés</h2>
+    <p>Payez avec le portefeuille mobile que vous utilisez au quotidien</p>
+    <div class="providers-row">
+      <div class="provider-pill"><div class="p-dot" style="background:#1a73e8"></div> Wave</div>
+      <div class="provider-pill"><div class="p-dot" style="background:#ff6600"></div> Orange Money</div>
+      <div class="provider-pill"><div class="p-dot" style="background:#cd1719"></div> Free Money</div>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="steps-section">
+  <div class="container">
+    <h2 class="section-title" style="text-align:center">Comment ça marche ?</h2>
+    <p class="section-sub" style="text-align:center">4 étapes simples, moins de 2 minutes</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <h4>Choisissez une offre</h4>
+        <p>Sélectionnez le montant en FCFA et les kWh correspondants.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <h4>Payez en mobile</h4>
+        <p>Entrez votre numéro Wave, Orange Money ou Free Money.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <h4>Recevez votre token</h4>
+        <p>Un code unique s'affiche. Il est valable 24 heures.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <h4>Validez le token</h4>
+        <p>Entrez le N° compteur + token. Le crédit est ajouté.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
