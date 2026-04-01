@@ -1,0 +1,782 @@
+{% extends 'core/base.html' %}
+{% block title %}Recharger — Smart Woyofal{% endblock %}
+
+{% block extra_css %}
+/* ── LAYOUT ── */
+.page { padding: 48px 0 80px; }
+.page-header { margin-bottom: 40px; }
+.page-header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+.page-header p { color: var(--muted); }
+
+/* ── STEPPER ── */
+.stepper {
+  display: flex;
+  gap: 0;
+  margin-bottom: 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.step-item {
+  flex: 1;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  border-right: 1px solid var(--border);
+  transition: all 0.3s;
+  cursor: default;
+}
+.step-item:last-child { border-right: none; }
+.step-item.active { color: var(--text); background: var(--surface2); }
+.step-item.done { color: var(--accent); }
+.step-dot {
+  width: 28px; height: 28px; min-width: 28px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+.step-item.active .step-dot {
+  border-color: var(--accent);
+  background: rgba(0,229,160,0.12);
+  color: var(--accent);
+}
+.step-item.done .step-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #0a0e1a;
+}
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp 0.35s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── OFFERS GRID ── */
+.offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.offer-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.offer-card:hover { border-color: rgba(0,229,160,0.4); transform: translateY(-2px); }
+.offer-card.selected { border-color: var(--accent); background: rgba(0,229,160,0.05); }
+.offer-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.offer-kwh {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.offer-unit { font-size: 0.75rem; color: var(--muted); margin-bottom: 12px; }
+.offer-price {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.offer-check {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #0a0e1a;
+  font-size: 0.65rem;
+  display: none;
+  align-items: center; justify-content: center;
+  font-weight: 700;
+}
+.offer-card.selected .offer-check { display: flex; }
+
+/* ── PROVIDERS ── */
+.providers-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.provider-btn {
+  flex: 1;
+  min-width: 130px;
+  padding: 16px 12px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  transition: all 0.2s;
+}
+.provider-btn:hover { border-color: rgba(255,255,255,0.2); }
+.provider-btn.selected-wave { border-color: var(--wave); background: rgba(26,115,232,0.08); color: #5b9cf6; }
+.provider-btn.selected-orange { border-color: var(--orange); background: rgba(255,102,0,0.08); color: #ff8533; }
+.provider-btn.selected-free { border-color: var(--free); background: rgba(205,23,25,0.08); color: #ff4d4f; }
+.p-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── FORM ── */
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+}
+.form-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--muted); }
+
+/* ── SUMMARY BOX ── */
+.summary-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row .label { color: var(--muted); }
+.summary-row .value { font-weight: 700; font-family: var(--font-mono); }
+.summary-row.total .value { color: var(--accent); font-size: 1.1rem; }
+
+/* ── TOKEN RESULT ── */
+.token-result {
+  background: var(--surface2);
+  border: 1px solid rgba(0,229,160,0.2);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.token-result h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+.token-result p { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+.token-display {
+  background: var(--bg);
+  border: 2px dashed rgba(0,229,160,0.3);
+  border-radius: 12px;
+  padding: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  word-break: break-all;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  margin-bottom: 12px;
+}
+.token-display:hover { background: rgba(0,229,160,0.04); }
+.token-copy-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-bottom: 20px;
+}
+.token-expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,107,53,0.1);
+  color: var(--accent2);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+/* ── VALIDATION RESULT ── */
+.validation-success {
+  background: rgba(0,229,160,0.06);
+  border: 2px solid rgba(0,229,160,0.25);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+}
+.validation-success .checkmark {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  display: block;
+  animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+.validation-success h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+.validation-success .balance {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  letter-spacing: -1px;
+  margin: 16px 0 4px;
+}
+.validation-success .balance-label { color: var(--muted); font-size: 0.9rem; }
+
+/* ── TABS ── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 32px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn.active { background: var(--surface2); color: var(--text); }
+
+/* ── TWO COLUMNS ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 680px) {
+  .two-col { grid-template-columns: 1fr; }
+  .stepper { flex-direction: column; }
+  .step-item { border-right: none; border-bottom: 1px solid var(--border); }
+  .step-item:last-child { border-bottom: none; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="container page">
+  <div class="page-header">
+    <h1>⚡ Recharger mon compteur</h1>
+    <p>Achetez du crédit kWh et validez votre token pour créditer votre compteur.</p>
+  </div>
+
+  <!-- STEPPER -->
+  <div class="stepper">
+    <div class="step-item active" id="step-ind-1">
+      <div class="step-dot">01</div>
+      <span>Choisir l'offre</span>
+    </div>
+    <div class="step-item" id="step-ind-2">
+      <div class="step-dot">02</div>
+      <span>Payer</span>
+    </div>
+    <div class="step-item" id="step-ind-3">
+      <div class="step-dot">03</div>
+      <span>Votre token</span>
+    </div>
+    <div class="step-item" id="step-ind-4">
+      <div class="step-dot">04</div>
+      <span>Valider</span>
+    </div>
+  </div>
+
+  <!-- TAB: ACHETER / VALIDER -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('buy')">💳 Acheter du crédit</button>
+    <button class="tab-btn" onclick="switchTab('validate')">🔑 Valider un token</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB BUY -->
+  <!-- ══════════════════════════════════════════ -->
+  <div id="tab-buy">
+
+    <!-- PANEL 1 : OFFRES + COMPTEUR -->
+    <div class="panel active" id="panel-1">
+      <div class="two-col">
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:var(--font-mono)">Offres disponibles</h3>
+          <div class="offers-grid" id="offers-grid">
+            <!-- populated by JS -->
+          </div>
+          <div class="form-group">
+            <label class="form-label">Montant personnalisé (FCFA)</label>
+            <input type="number" id="custom-amount" class="form-input" placeholder="ex: 3000" min="500" step="500"
+              oninput="selectCustomAmount(this.value)">
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:var(--font-mono)">Votre compteur</h3>
+          <div class="form-group">
+            <label class="form-label">N° de compteur</label>
+            <input type="text" id="meter-id-input" class="form-input" placeholder="ex: MTR-001" />
+          </div>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:16px" onclick="checkMeterBalance()">
+            Vérifier le solde
+          </button>
+          <div id="meter-info" style="display:none" class="summary-box">
+            <div class="summary-row">
+              <span class="label">Compteur</span>
+              <span class="value" id="meter-info-id">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Solde actuel</span>
+              <span class="value" id="meter-info-balance">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Lieu</span>
+              <span class="value" id="meter-info-loc">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-primary" onclick="goToStep2()">
+          Continuer → Paiement
+        </button>
+      </div>
+    </div>
+
+    <!-- PANEL 2 : PAIEMENT -->
+    <div class="panel" id="panel-2">
+      <div class="two-col">
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:var(--font-mono)">Opérateur</h3>
+          <div class="providers-row">
+            <button class="provider-btn" onclick="selectProvider('wave', this)">
+              <div class="p-dot" style="background:var(--wave)"></div> Wave
+            </button>
+            <button class="provider-btn" onclick="selectProvider('orange_money', this)">
+              <div class="p-dot" style="background:var(--orange)"></div> Orange Money
+            </button>
+            <button class="provider-btn" onclick="selectProvider('free_money', this)">
+              <div class="p-dot" style="background:var(--free)"></div> Free Money
+            </button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Numéro de téléphone</label>
+            <input type="tel" id="phone-input" class="form-input" placeholder="ex: 77 123 45 67" />
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:var(--font-mono)">Récapitulatif</h3>
+          <div class="summary-box">
+            <div class="summary-row">
+              <span class="label">Compteur</span>
+              <span class="value" id="sum-meter">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Crédit</span>
+              <span class="value" id="sum-kwh">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Opérateur</span>
+              <span class="value" id="sum-provider">—</span>
+            </div>
+            <div class="summary-row total">
+              <span class="label">Total</span>
+              <span class="value" id="sum-amount">—</span>
+            </div>
+          </div>
+          <p style="color:var(--muted);font-size:0.8rem;line-height:1.6">
+            ⚠️ Assurez-vous que votre numéro est correct et que votre solde est suffisant avant de confirmer.
+          </p>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-outline" onclick="goToPanel(1)">← Retour</button>
+        <button class="btn btn-primary" id="pay-btn" onclick="submitPayment()">
+          Payer maintenant
+        </button>
+      </div>
+    </div>
+
+    <!-- PANEL 3 : TOKEN REÇU -->
+    <div class="panel" id="panel-3">
+      <div class="token-result">
+        <h3>🎉 Paiement confirmé !</h3>
+        <p>Voici votre token de recharge. Notez-le — il expire dans 24h.</p>
+        <div class="token-display" id="token-display" onclick="copyToken()">
+          <!-- token here -->
+        </div>
+        <p class="token-copy-hint">↑ Cliquez pour copier</p>
+        <div class="token-expiry" id="token-expiry">⏱ Expire le …</div>
+      </div>
+      <div style="text-align:center;margin-bottom:32px">
+        <button class="btn btn-primary" onclick="goToValidateTab()">
+          → Valider ce token maintenant
+        </button>
+      </div>
+      <div class="summary-box">
+        <div class="summary-row">
+          <span class="label">Référence commande</span>
+          <span class="value" id="res-order-ref">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">ID transaction</span>
+          <span class="value" id="res-txn-id">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Compteur</span>
+          <span class="value" id="res-meter">—</span>
+        </div>
+        <div class="summary-row total">
+          <span class="label">Crédit acheté</span>
+          <span class="value" id="res-kwh">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-buy -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB VALIDATE -->
+  <!-- ══════════════════════════════════════════ -->
+  <div id="tab-validate" style="display:none">
+
+    <!-- FORM -->
+    <div id="validate-form-section">
+      <div style="max-width:480px;margin:0 auto">
+        <div class="card">
+          <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:4px">Valider votre token</h3>
+          <p style="color:var(--muted);font-size:0.85rem;margin-bottom:24px">
+            Entrez le N° de votre compteur et le token reçu après paiement.
+          </p>
+          <div class="form-group">
+            <label class="form-label">N° de compteur</label>
+            <input type="text" id="val-meter-id" class="form-input" placeholder="ex: MTR-001" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Token de recharge</label>
+            <input type="text" id="val-token" class="form-input"
+              placeholder="ex: a3f8c2d1…"
+              style="font-family:var(--font-mono);font-size:0.85rem" />
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitValidation()" id="validate-btn">
+            ✅ Valider et créditer le compteur
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="validate-success-section" style="display:none;max-width:480px;margin:0 auto">
+      <div class="validation-success">
+        <span class="checkmark">⚡</span>
+        <h2>Compteur crédité !</h2>
+        <p style="color:var(--muted);font-size:0.9rem;margin-bottom:0">Nouveau solde</p>
+        <div class="balance" id="val-new-balance">— kWh</div>
+        <p class="balance-label" id="val-credited">+— kWh ajoutés</p>
+      </div>
+      <div style="text-align:center;margin-top:24px;display:flex;gap:12px;justify-content:center">
+        <button class="btn btn-outline" onclick="resetValidation()">Valider un autre token</button>
+        <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+      </div>
+    </div>
+
+  </div><!-- /tab-validate -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── STATE ──
+const state = {
+  selectedOffer: null,
+  customAmount: null,
+  meterId: null,
+  provider: null,
+  token: null,
+};
+
+const TARIF = 120; // FCFA/kWh
+
+// ── OFFERS ──
+async function loadOffers() {
+  try {
+    const r = await fetch('/api/offers/');
+    const d = await r.json();
+    renderOffers(d.offers);
+  } catch {
+    // fallback
+    renderOffers([
+      {fcfa:500,  kwh:4.17,  label:'Starter'},
+      {fcfa:1000, kwh:8.33,  label:'Basic'},
+      {fcfa:2500, kwh:20.83, label:'Standard'},
+      {fcfa:5000, kwh:41.67, label:'Premium'},
+      {fcfa:10000,kwh:83.33, label:'Pro'},
+    ]);
+  }
+}
+
+function renderOffers(offers) {
+  const grid = document.getElementById('offers-grid');
+  grid.innerHTML = offers.map((o, i) => `
+    <div class="offer-card" onclick="selectOffer(${o.fcfa}, ${o.kwh}, ${i})">
+      <div class="offer-check">✓</div>
+      <div class="offer-label">${o.label}</div>
+      <div class="offer-kwh">${o.kwh}</div>
+      <div class="offer-unit">kWh</div>
+      <div class="offer-price">${o.fcfa.toLocaleString()} FCFA</div>
+    </div>
+  `).join('');
+}
+
+function selectOffer(fcfa, kwh, idx) {
+  state.selectedOffer = {fcfa, kwh};
+  state.customAmount = null;
+  document.getElementById('custom-amount').value = '';
+  document.querySelectorAll('.offer-card').forEach((c, i) =>
+    c.classList.toggle('selected', i === idx)
+  );
+}
+
+function selectCustomAmount(val) {
+  const fcfa = parseInt(val);
+  if (!fcfa || fcfa < 500) return;
+  state.selectedOffer = {fcfa, kwh: Math.round(fcfa / TARIF * 100) / 100};
+  document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+}
+
+// ── PROVIDER ──
+function selectProvider(p, btn) {
+  state.provider = p;
+  document.querySelectorAll('.provider-btn').forEach(b => {
+    b.className = 'provider-btn';
+  });
+  btn.className = `provider-btn selected-${p === 'orange_money' ? 'orange' : p === 'free_money' ? 'free' : p}`;
+  document.getElementById('sum-provider').textContent =
+    p === 'wave' ? 'Wave' : p === 'orange_money' ? 'Orange Money' : 'Free Money';
+}
+
+// ── METER CHECK ──
+async function checkMeterBalance() {
+  const id = document.getElementById('meter-id-input').value.trim();
+  if (!id) { showToast('Entrez un N° de compteur.', 'error'); return; }
+  try {
+    const r = await fetch(`/api/meter/${id}/balance/`);
+    if (!r.ok) { showToast('Compteur introuvable.', 'error'); return; }
+    const d = await r.json();
+    document.getElementById('meter-info-id').textContent = d.meter_id;
+    document.getElementById('meter-info-balance').textContent = d.credit_kwh + ' kWh';
+    document.getElementById('meter-info-loc').textContent = d.location;
+    document.getElementById('meter-info').style.display = 'block';
+    showToast('Compteur trouvé ✓', 'success');
+  } catch { showToast('Erreur réseau.', 'error'); }
+}
+
+// ── NAVIGATION ──
+function goToStep2() {
+  const meterId = document.getElementById('meter-id-input').value.trim();
+  if (!meterId) { showToast('Entrez votre N° de compteur.', 'error'); return; }
+  if (!state.selectedOffer) { showToast('Choisissez une offre.', 'error'); return; }
+  state.meterId = meterId;
+  document.getElementById('sum-meter').textContent = meterId;
+  document.getElementById('sum-kwh').textContent = state.selectedOffer.kwh + ' kWh';
+  document.getElementById('sum-amount').textContent = state.selectedOffer.fcfa.toLocaleString() + ' FCFA';
+  goToPanel(2);
+}
+
+function goToPanel(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById(`panel-${i}`).classList.toggle('active', i === n);
+    const ind = document.getElementById(`step-ind-${i}`);
+    if (i < n) { ind.classList.remove('active'); ind.classList.add('done'); ind.querySelector('.step-dot').textContent = '✓'; }
+    else if (i === n) { ind.classList.add('active'); ind.classList.remove('done'); }
+    else { ind.classList.remove('active','done'); ind.querySelector('.step-dot').textContent = '0'+i; }
+  });
+}
+
+// ── PAYMENT ──
+async function submitPayment() {
+  if (!state.provider) { showToast('Choisissez un opérateur.', 'error'); return; }
+  const phone = document.getElementById('phone-input').value.trim();
+  if (!phone) { showToast('Entrez votre numéro de téléphone.', 'error'); return; }
+
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Traitement…';
+
+  try {
+    const r = await fetch('/api/payment/create/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+      body: JSON.stringify({
+        meter_id: state.meterId,
+        amount_fcfa: state.selectedOffer.fcfa,
+        provider: state.provider,
+        phone_number: phone,
+      }),
+    });
+    const d = await r.json();
+
+    if (!r.ok || !d.success) {
+      showToast(d.message || 'Paiement échoué.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Payer maintenant';
+      return;
+    }
+
+    // Success
+    state.token = d.token;
+    document.getElementById('token-display').textContent = d.token;
+    const exp = new Date(d.token_expires_at).toLocaleString('fr-FR');
+    document.getElementById('token-expiry').textContent = `⏱ Expire le ${exp}`;
+    document.getElementById('res-order-ref').textContent = d.order_ref;
+    document.getElementById('res-txn-id').textContent = d.transaction_id;
+    document.getElementById('res-meter').textContent = d.meter_id;
+    document.getElementById('res-kwh').textContent = d.amount_kwh + ' kWh';
+
+    goToPanel(3);
+    showToast('Paiement confirmé ! 🎉', 'success');
+
+    // Update step 4
+    document.getElementById('step-ind-4').classList.remove('done','active');
+
+  } catch(e) {
+    showToast('Erreur réseau. Réessayez.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Payer maintenant';
+  }
+}
+
+// ── COPY TOKEN ──
+function copyToken() {
+  const t = document.getElementById('token-display').textContent;
+  navigator.clipboard.writeText(t).then(() => showToast('Token copié !', 'success'));
+}
+
+// ── GO TO VALIDATE ──
+function goToValidateTab() {
+  switchTab('validate');
+  if (state.token) document.getElementById('val-token').value = state.token;
+  if (state.meterId) document.getElementById('val-meter-id').value = state.meterId;
+}
+
+// ── VALIDATION ──
+async function submitValidation() {
+  const meterId = document.getElementById('val-meter-id').value.trim();
+  const token = document.getElementById('val-token').value.trim();
+  if (!meterId || !token) { showToast('Remplissez tous les champs.', 'error'); return; }
+
+  const btn = document.getElementById('validate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Validation…';
+
+  try {
+    const r = await fetch('/api/payment/validate/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+      body: JSON.stringify({meter_id: meterId, token}),
+    });
+    const d = await r.json();
+
+    if (!r.ok || !d.success) {
+      showToast(d.error || 'Validation échouée.', 'error');
+      return;
+    }
+
+    document.getElementById('val-new-balance').textContent = d.new_balance_kwh + ' kWh';
+    document.getElementById('val-credited').textContent = `+${d.credited_kwh} kWh ajoutés`;
+    document.getElementById('validate-form-section').style.display = 'none';
+    document.getElementById('validate-success-section').style.display = 'block';
+    showToast('Compteur crédité avec succès ! ⚡', 'success');
+
+    // Mark step 4 done
+    const s4 = document.getElementById('step-ind-4');
+    s4.classList.add('done'); s4.querySelector('.step-dot').textContent = '✓';
+
+  } catch { showToast('Erreur réseau.', 'error'); }
+  finally {
+    btn.disabled = false;
+    btn.textContent = '✅ Valider et créditer le compteur';
+  }
+}
+
+function resetValidation() {
+  document.getElementById('val-meter-id').value = '';
+  document.getElementById('val-token').value = '';
+  document.getElementById('validate-form-section').style.display = 'block';
+  document.getElementById('validate-success-section').style.display = 'none';
+}
+
+// ── TABS ──
+function switchTab(tab) {
+  document.getElementById('tab-buy').style.display = tab === 'buy' ? 'block' : 'none';
+  document.getElementById('tab-validate').style.display = tab === 'validate' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b, i) =>
+    b.classList.toggle('active', (i === 0 && tab === 'buy') || (i === 1 && tab === 'validate'))
+  );
+}
+
+// ── CSRF ──
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : '';
+}
+
+// ── INIT ──
+loadOffers();
+</script>
+{% endblock %}

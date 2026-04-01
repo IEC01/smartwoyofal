@@ -1,0 +1,216 @@
+{% extends 'core/base.html' %}
+{% block title %}Smart Woyofal — Recharge électrique en ligne{% endblock %}
+
+{% block extra_css %}
+.hero {
+  padding: 100px 0 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -200px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(0,229,160,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-tag {
+  display: inline-block;
+  background: rgba(0,229,160,0.1);
+  color: var(--accent);
+  border: 1px solid rgba(0,229,160,0.25);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+h1 {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+h1 em {
+  font-style: normal;
+  color: var(--accent);
+}
+.hero-sub {
+  font-size: 1.1rem;
+  color: var(--muted);
+  max-width: 500px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+}
+.hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+.features {
+  padding: 80px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.feature-card:hover {
+  border-color: rgba(0,229,160,0.3);
+  transform: translateY(-3px);
+}
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+.feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+.feature-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+.providers {
+  padding: 60px 0;
+  border-top: 1px solid var(--border);
+}
+.providers-title {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  margin-bottom: 32px;
+}
+.providers-grid {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.provider-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+.provider-badge:hover { border-color: rgba(255,255,255,0.2); }
+.dot-wave { width: 10px; height: 10px; border-radius: 50%; background: var(--wave); }
+.dot-orange { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); }
+.dot-free { width: 10px; height: 10px; border-radius: 50%; background: var(--free); }
+
+.steps {
+  padding: 80px 0;
+  border-top: 1px solid var(--border);
+}
+.steps-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 48px; letter-spacing: -0.5px; }
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0;
+  position: relative;
+}
+.step {
+  text-align: center;
+  padding: 32px 24px;
+  position: relative;
+}
+.step-num {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+.step h4 { font-weight: 700; margin-bottom: 8px; }
+.step p { color: var(--muted); font-size: 0.85rem; }
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section class="hero">
+    <div class="hero-tag">🔋 Nouveau — Recharge en ligne</div>
+    <h1>Rechargez votre compteur<br>depuis <em>n'importe où</em></h1>
+    <p class="hero-sub">
+      Achetez du crédit kWh directement avec Wave, Orange Money ou Free Money.
+      Fini les déplacements au comptoir.
+    </p>
+    <div class="hero-cta">
+      <a href="/recharge/" class="btn btn-primary">⚡ Recharger maintenant</a>
+      <a href="/api/offers/" class="btn btn-outline">Voir les offres</a>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Crédit instantané</h3>
+      <p>Votre compteur est crédité dès que vous validez votre token. Aucune attente.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h3>Token sécurisé</h3>
+      <p>Chaque recharge génère un token SHA-256 unique valable 24h. Inviolable.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>3 opérateurs</h3>
+      <p>Wave, Orange Money, Free Money — payez avec le portefeuille que vous utilisez.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Historique complet</h3>
+      <p>Consultez toutes vos recharges et suivez votre consommation en temps réel.</p>
+    </div>
+  </section>
+
+  <section class="providers">
+    <p class="providers-title">OPÉRATEURS ACCEPTÉS</p>
+    <div class="providers-grid">
+      <div class="provider-badge"><div class="dot-wave"></div> Wave</div>
+      <div class="provider-badge"><div class="dot-orange"></div> Orange Money</div>
+      <div class="provider-badge"><div class="dot-free"></div> Free Money</div>
+    </div>
+  </section>
+
+  <section class="steps">
+    <h2 class="steps-title">Comment ça marche ?</h2>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Choisissez une offre</h4>
+        <p>Sélectionnez le montant en FCFA et le nombre de kWh correspondants.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>Payez en mobile</h4>
+        <p>Entrez votre numéro Wave, Orange Money ou Free Money et confirmez.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>Recevez votre token</h4>
+        <p>Un code unique s'affiche. Notez-le — il est valable 24h.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>Validez sur le site</h4>
+        <p>Entrez votre N° de compteur et le token. Le crédit est ajouté instantanément.</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

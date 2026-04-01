@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Smart Woyofal{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2233;
+      --border: rgba(255,255,255,0.08);
+      --accent: #00e5a0;
+      --accent2: #ff6b35;
+      --wave: #1a73e8;
+      --orange: #ff6600;
+      --free: #cd1719;
+      --text: #f0f4ff;
+      --muted: #6b7a99;
+      --danger: #ff4444;
+      --success: #00e5a0;
+      --radius: 16px;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { opacity: 0.8; }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* NAV */
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,14,26,0.85);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 32px; font-size: 0.9rem; color: var(--muted); }
+    .nav-links a { color: var(--muted); transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0e1a;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+
+    /* BADGE */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .badge-green { background: rgba(0,229,160,0.12); color: var(--accent); }
+    .badge-orange { background: rgba(255,107,53,0.12); color: var(--accent2); }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 9999;
+      max-width: 380px;
+    }
+    .toast-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      animation: slideIn 0.3s ease;
+    }
+    .toast-item.success { border-left: 3px solid var(--success); }
+    .toast-item.error { border-left: 3px solid var(--danger); }
+    @keyframes slideIn {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* SPINNER */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <div class="logo">Smart<span>Woyofal</span></div>
+      <div class="nav-links">
+        <a href="/">Accueil</a>
+        <a href="/recharge/">Recharger</a>
+      </div>
+    </div>
+  </nav>
+
+  {% block content %}{% endblock %}
+
+  <div id="toast"></div>
+
+  <script>
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      const el = document.createElement('div');
+      el.className = `toast-item ${type}`;
+      el.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span><span>${msg}</span>`;
+      t.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
